@@ -1,0 +1,494 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pino &amp; Escarcha Mayoreo</title>
+<meta name="description" content="Árboles de Navidad y adornos. Pedidos por WhatsApp.">
+
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: sticky header with search + cart, compact intro band, category chips, product grid, slide-in cart drawer */
+:root{
+  --bg:#F5F7F4; --surface:#FFFFFF; --ink:#13241D; --muted:#5B6B63; --line:#DCE3DE;
+  --pine:#1D4A3A; --pine-ink:#FFFFFF; --berry:#B4233C; --brass:#8A6414; --brass-bg:#F6ECD3;
+  --photo:#FFFFFF; --chip:#E9EFEB;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"Figtree", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E1613; --surface:#15211C; --ink:#E7EEEA; --muted:#9AAAA2; --line:#26352E;
+  --pine:#2F6F57; --pine-ink:#FFFFFF; --berry:#EE6A80; --brass:#E2B85A; --brass-bg:#2E2614;
+  --photo:#ECEFEC; --chip:#1D2B25; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E1613; --surface:#15211C; --ink:#E7EEEA; --muted:#9AAAA2; --line:#26352E;
+  --pine:#2F6F57; --pine-ink:#FFFFFF; --berry:#EE6A80; --brass:#E2B85A; --brass-bg:#2E2614;
+  --photo:#ECEFEC; --chip:#1D2B25; color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--pine)}
+.wrap{max-width:1240px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.mono{font-family:var(--f-mono);font-size:12px;letter-spacing:.02em}
+
+/* header */
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--pine);color:var(--pine-ink)}
+header.top .wrap{display:flex;align-items:center;gap:16px;padding-block:12px}
+.brand{font-family:var(--f-display);font-weight:800;font-size:22px;letter-spacing:-.01em;white-space:nowrap;line-height:1}
+.brand small{display:block;font-family:var(--f-body);font-weight:500;font-size:11px;letter-spacing:.12em;text-transform:uppercase;opacity:.75;margin-top:4px}
+.search{flex:1;min-width:0;position:relative}
+.search input{width:100%;border:0;border-radius:999px;padding:10px 16px;background:rgba(255,255,255,.14);color:#fff}
+.search input::placeholder{color:rgba(255,255,255,.7)}
+.cartbtn{display:flex;align-items:center;gap:8px;border:0;border-radius:999px;padding:9px 16px;background:#fff;color:#1D4A3A;font-weight:700;cursor:pointer;white-space:nowrap}
+.cartbtn .n{background:#B4233C;color:#fff;border-radius:999px;min-width:22px;height:22px;display:grid;place-items:center;font-size:12px;padding:0 6px}
+
+/* intro */
+.intro{padding-block:28px 8px;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:24px;align-items:end}
+.intro h1{font-family:var(--f-display);font-weight:800;font-size:clamp(28px,4.4vw,46px);line-height:1.02;letter-spacing:-.02em;margin:0;text-wrap:balance}
+.intro h1 em{font-style:normal;color:var(--berry)}
+.intro p{margin:10px 0 0;color:var(--muted);max-width:56ch}
+.rules{display:grid;gap:8px}
+.rule{display:flex;gap:12px;align-items:baseline;padding:10px 14px;border-radius:var(--r);background:var(--surface);border:1px solid var(--line)}
+.rule b{font-family:var(--f-display);font-size:15px;min-width:86px}
+.rule span{color:var(--muted);font-size:14px}
+.rule.may b{color:var(--brass)}
+@media (max-width:760px){.intro{grid-template-columns:1fr}}
+
+/* filters */
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding-block:18px 14px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 14px;cursor:pointer;font-weight:600;font-size:14px;display:flex;gap:6px;align-items:center}
+.chip .c{font-size:12px;color:var(--muted);font-weight:500;font-variant-numeric:tabular-nums}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chip[aria-pressed="true"] .c{color:inherit;opacity:.7}
+.sort{margin-left:auto;display:flex;gap:8px;align-items:center;color:var(--muted);font-size:14px}
+.sort select{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 8px}
+.count{color:var(--muted);font-size:14px;padding-bottom:8px}
+
+/* grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px;padding-bottom:64px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.ph{background:var(--photo);aspect-ratio:1/1;max-width:100%;display:grid;place-items:center;position:relative}
+.ph{overflow:hidden}
+.ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:10px}
+.ph .noimg{color:#5B6B63;font-size:13px;text-align:center;padding:20px}
+.tag{position:absolute;top:10px;left:10px;background:var(--pine);color:var(--pine-ink);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 8px;border-radius:6px}
+.body{padding:14px;display:flex;flex-direction:column;gap:10px;flex:1}
+.head .mono{color:var(--muted)}
+.head h3{font-family:var(--f-display);font-weight:600;font-size:18px;line-height:1.15;margin:2px 0 0;text-wrap:balance}
+.head p{margin:4px 0 0;color:var(--muted);font-size:13.5px}
+.sizes{display:flex;flex-wrap:wrap;gap:6px}
+.sz{border:1px solid var(--line);background:transparent;border-radius:7px;padding:4px 9px;font-size:13px;cursor:pointer;font-weight:600;font-variant-numeric:tabular-nums}
+.sz[aria-pressed="true"]{border-color:var(--pine);background:var(--pine);color:var(--pine-ink)}
+.specs{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12.5px;color:var(--muted)}
+.specs b{color:var(--ink);font-weight:600}
+.price{margin-top:auto;display:grid;gap:6px}
+.pm{display:flex;align-items:baseline;gap:6px}
+.pm strong{font-family:var(--f-display);font-weight:800;font-size:26px;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.pm span{color:var(--muted);font-size:13px}
+.pw{background:var(--brass-bg);color:var(--brass);border-radius:7px;padding:6px 10px;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
+.buy{display:flex;gap:8px}
+.qty{display:flex;align-items:center;border:1px solid var(--line);border-radius:8px}
+.qty button{border:0;background:transparent;width:32px;height:36px;cursor:pointer;font-size:18px;font-weight:600}
+.qty input{width:44px;border:0;background:transparent;text-align:center;font-variant-numeric:tabular-nums;-moz-appearance:textfield}
+.qty input::-webkit-outer-spin-button,.qty input::-webkit-inner-spin-button{-webkit-appearance:none}
+.add{flex:1;border:0;border-radius:8px;background:var(--pine);color:var(--pine-ink);font-weight:700;cursor:pointer;padding:0 12px;min-height:38px}
+.add:hover{filter:brightness(1.1)}
+.empty{grid-column:1/-1;text-align:center;color:var(--muted);padding:48px 0}
+
+/* drawer */
+.scrim{position:fixed;inset:0;background:rgba(5,12,9,.45);z-index:40}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(440px,100%);z-index:41;background:var(--surface);display:flex;flex-direction:column;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);padding-right:env(safe-area-inset-right,0px);box-shadow:-12px 0 40px rgba(0,0,0,.18)}
+.dhead{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;border-bottom:1px solid var(--line)}
+.dhead h2{font-family:var(--f-display);margin:0;font-size:22px}
+.x{border:0;background:var(--chip);border-radius:999px;width:34px;height:34px;cursor:pointer;font-size:18px}
+.lines{flex:1;overflow:auto;padding:8px 18px;display:grid;gap:0;align-content:start}
+.line{display:grid;grid-template-columns:56px minmax(0,1fr) auto;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);align-items:start}
+.line img{width:56px;height:56px;object-fit:contain;background:var(--photo);border-radius:8px;padding:3px}
+.line h4{margin:0;font-size:14px;line-height:1.25}
+.line .meta{font-size:12px;color:var(--muted)}
+.line .tier{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-radius:5px;padding:1px 6px;margin-top:4px}
+.tier.w{background:var(--brass-bg);color:var(--brass)}
+.tier.r{background:var(--chip);color:var(--muted)}
+.hint{font-size:12px;color:var(--brass);margin-top:3px}
+.line .right{text-align:right;display:grid;gap:6px;justify-items:end}
+.line .right strong{font-variant-numeric:tabular-nums}
+.rm{border:0;background:none;color:var(--muted);font-size:12px;cursor:pointer;text-decoration:underline;padding:0}
+.qty.sm button{width:26px;height:28px;font-size:15px}
+.qty.sm input{width:38px;font-size:13px}
+.dfoot{border-top:1px solid var(--line);padding:14px 18px 18px;display:grid;gap:10px}
+.tot{display:flex;justify-content:space-between;font-variant-numeric:tabular-nums}
+.tot.big{font-family:var(--f-display);font-size:22px;font-weight:800}
+.tot.save{color:var(--brass);font-size:14px;font-weight:600}
+.dfoot input,.dfoot textarea{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:9px 11px}
+.dfoot textarea{resize:vertical;min-height:54px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.wa{display:block;text-align:center;text-decoration:none;background:#1F8F4E;color:#fff;font-weight:700;border-radius:10px;padding:12px}
+.wa[aria-disabled="true"]{opacity:.45;pointer-events:none}
+.minbox{display:grid;gap:6px;background:var(--brass-bg);color:var(--brass);border-radius:10px;padding:10px 12px;font-size:13.5px;font-weight:600}
+.minbox .bar{height:6px;border-radius:99px;background:var(--line);overflow:hidden}
+.minbox .bar i{display:block;height:100%;background:var(--brass);border-radius:99px}
+.minbox.ok{background:var(--chip);color:var(--pine)}
+.minbox.ok .bar{display:none}
+.copy{border:1px solid var(--line);background:transparent;border-radius:10px;padding:10px;font-weight:600;cursor:pointer}
+.copy:disabled{opacity:.45;cursor:default}
+.note{font-size:12px;color:var(--muted);margin:0}
+.dempty{color:var(--muted);text-align:center;padding:40px 10px}
+
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-weight:600;z-index:60;font-size:14px}
+footer{border-top:1px solid var(--line);color:var(--muted);font-size:13px}
+footer .wrap{padding-block:20px 32px}
+
+@media (max-width:560px){
+  header.top .wrap{flex-wrap:wrap}
+  .search{order:3;flex-basis:100%}
+  .brand{flex:1}
+  .sort{margin-left:0;width:100%}
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .body{padding:10px;gap:8px}
+  .head h3{font-size:15px}
+  .head p{display:none}
+  .pm strong{font-size:20px}
+  .pw{font-size:12px;padding:5px 7px}
+  .buy{flex-direction:column}
+  .qty{justify-content:space-between}
+}
+@media (prefers-reduced-motion:no-preference){
+  .drawer{animation:slide .22s ease-out}
+  @keyframes slide{from{transform:translateX(30px);opacity:.6}to{transform:none;opacity:1}}
+}
+</style>
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)} body{margin:0} img{max-width:100%}</style>
+</head>
+<body>
+
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand" id="brandName">Pino &amp; Escarcha<small>Mayoreo por caja · Navidad 2026</small></div>
+    <div class="search"><input id="q" type="search" placeholder="Buscar: corona, escarcha, A150C…" aria-label="Buscar productos"></div>
+    <button class="cartbtn" id="openCart" type="button">Pedido <span class="n" id="cartN">0</span></button>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="intro">
+    <div>
+      <h1>Navidad para tu negocio, <em>por caja</em></h1>
+      <p>Árboles con luz, árboles de escritorio, coronas, escarchas y colgantes. Precios por pieza, venta por caja completa.</p>
+    </div>
+    <div class="rules">
+      <div class="rule may"><b>Venta</b><span>Por caja completa del mismo modelo. Puedes combinar modelos distintos.</span></div>
+      <div class="rule"><b>Pedido</b><span>Arma tu lista y envíala por WhatsApp para confirmar existencias y envío.</span></div>
+      <div class="rule" id="crossLink" hidden><b>Menudeo</b><span>¿Buscas un solo árbol? <a id="crossA" href="#">Ve el catálogo por pieza</a>.</span></div>
+    </div>
+  </section>
+
+  <div class="filters" id="chips" role="group" aria-label="Categorías"></div>
+  <div class="filters" style="padding-top:0">
+    <div class="count" id="count"></div>
+    <label class="sort" for="sort">Ordenar
+      <select id="sort">
+        <option value="cat">Por categoría</option>
+        <option value="asc">Precio: menor a mayor</option>
+        <option value="desc">Precio: mayor a menor</option>
+      </select>
+    </label>
+  </div>
+  <div class="grid" id="grid"></div>
+</main>
+
+<footer><div class="wrap">Precios en pesos mexicanos. Venta por caja completa; el precio por pieza es de referencia. Modelos surtidos (A, B, C…) se indican en las notas del pedido. Existencias sujetas a confirmación.</div></footer>
+
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" hidden aria-label="Tu pedido">
+  <div class="dhead"><h2>Tu pedido</h2><button class="x" id="closeCart" type="button" aria-label="Cerrar">×</button></div>
+  <div class="lines" id="lines"></div>
+  <div class="dfoot" id="dfoot">
+    <div class="minbox" id="minBox" hidden></div>
+    <div class="tot big"><span>Total</span><span id="total">$0</span></div>
+    <div class="row2">
+      <input id="cName" placeholder="Tu nombre o negocio" aria-label="Nombre">
+      <input id="cCity" placeholder="Ciudad / CP" aria-label="Ciudad o código postal">
+    </div>
+    <textarea id="cNotes" placeholder="Notas: modelos surtidos, colores, fecha de entrega…" aria-label="Notas"></textarea>
+    <a class="wa" id="waBtn" href="#" target="_blank" rel="noopener">Enviar pedido por WhatsApp</a>
+    <button class="copy" id="copyBtn" type="button">Copiar pedido</button>
+    <p class="note" id="waNote"></p>
+  </div>
+</aside>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* ===== Configuración: edita aquí ===== */
+const CONFIG = {
+  tienda: "Pino & Escarcha",
+  whatsapp: "525559098750", // número con lada, sin espacios. Ej: "5215512345678"
+  pedidoMinimo: 700,     // menudeo: pedido mínimo con envío incluido (0 = sin mínimo)
+  margenMayoreo: 0.30,   // página de mayoreo: +30% sobre costo
+  otraPagina: "index.html" // enlace a la otra página (menudeo <-> mayoreo)
+};
+const MODE = "mayoreo";             // "menudeo" o "mayoreo"
+const PRECIO_MENUDEO = {"B120H": 349, "B150H": 449, "B180H": 549, "B210H": 799, "B240H": 1099, "B120Z": 449, "B150Z": 649, "B180Z": 749, "B210Z": 999, "B240Z": 1249, "B120ZB": 479, "B150ZB": 699, "B180ZB": 849, "B210ZB": 1099, "B240ZB": 1399, "B120G": 449, "B150G": 599, "B180G": 799, "B210G": 1049, "B240G": 1349, "B150A": 1199, "B180A": 1599, "B210A": 2199, "B240A": 2999, "B181A": 849, "B211A": 1149, "B150S": 749, "B180S": 949, "B210S": 1249, "B150T": 849, "B180T": 1099, "B210T": 1399, "B151U": 1099, "B180U": 1449, "B181U": 1499, "B210U": 1799, "B180V": 1999, "B210V": 2699}; // precio por pieza en menudeo, por modelo
+/* ===================================== */
+
+const IMG = {"CN3809A": "img/CN3809A.jpg", "A60X": "img/A60X.jpg", "CN3812A-E": "img/CN3812A-E.jpg", "AX": "img/AX.jpg", "AJ": "img/AJ.jpg", "CN1011-A": "img/CN1011-A.jpg", "BZ": "img/BZ.jpg", "BV": "img/BV.jpg", "CN1015-A": "img/CN1015-A.jpg", "CN4812A-C": "img/CN4812A-C.jpg", "BG": "img/BG.jpg", "CN1003": "img/CN1003.jpg", "B1A": "img/B1A.jpg", "AD": "img/AD.jpg", "BA": "img/BA.jpg", "CN1006-A": "img/CN1006-A.jpg", "AT": "img/AT.jpg", "CN4812A-A": "img/CN4812A-A.jpg", "CN1004": "img/CN1004.jpg", "BH": "img/BH.jpg", "A45B": "img/A45B.jpg", "CA4812A-E": "img/CA4812A-E.jpg", "BT": "img/BT.jpg", "CN3809B": "img/CN3809B.jpg", "CN1013-A": "img/CN1013-A.jpg", "C45130": "img/C45130.jpg", "C50140": "img/C50140.jpg", "CN1007": "img/CN1007.jpg", "C4581": "img/C4581.jpg", "A60F": "img/A60F.jpg", "C4080": "img/C4080.jpg", "AB": "img/AB.jpg", "A60D": "img/A60D.jpg", "BS": "img/BS.jpg", "CN3810B": "img/CN3810B.jpg", "A60H": "img/A60H.jpg", "CN1016": "img/CN1016.jpg", "CN1012-A": "img/CN1012-A.jpg", "AF": "img/AF.jpg", "CN1009-A": "img/CN1009-A.jpg", "CN3810A": "img/CN3810A.jpg", "AG": "img/AG.jpg", "CN1008-A": "img/CN1008-A.jpg", "A60E": "img/A60E.jpg", "CN4812A": "img/CN4812A.jpg", "CA4812A-D": "img/CA4812A-D.jpg", "AK": "img/AK.jpg", "A60A": "img/A60A.jpg", "CA3812A-A": "img/CA3812A-A.jpg", "C3595": "img/C3595.jpg", "CN1010-A": "img/CN1010-A.jpg", "C55180": "img/C55180.jpg", "CN3812A-D": "img/CN3812A-D.jpg", "AH": "img/AH.jpg", "BZB": "img/BZB.jpg", "AC": "img/AC.jpg", "CN3811": "img/CN3811.jpg", "AS": "img/AS.jpg", "A60R": "img/A60R.jpg", "A60C": "img/A60C.jpg", "CN3812A-C": "img/CN3812A-C.jpg", "AFF": "img/AFF.jpg", "F270160": "img/F270160.jpg", "AM": "img/AM.jpg", "CN4812B": "img/CN4812B.jpg", "CN1002": "img/CN1002.jpg", "CN1014-A": "img/CN1014-A.jpg", "A45A": "img/A45A.jpg", "F270200": "img/F270200.jpg", "CN1005": "img/CN1005.jpg", "CN1001": "img/CN1001.jpg", "BU": "img/BU.jpg", "A60G": "img/A60G.jpg"};
+
+// Variantes de árbol: [modelo, medida cm, ramas, pzs por caja, costo]
+const T = (sku,cm,ramas,caja,costo)=>({sku,label:cm+" cm",specs:[["Altura",cm+" cm"],["Ramas",ramas],["Pzs/caja",caja]],caja,costo});
+const S = (sku,label,caja,costo,extra=[],img)=>({sku,label,specs:[...extra,["Pzs/caja",caja]],caja,costo,img});
+
+const CATS = [
+  ["sinluz","Árboles sin luz"],["conluz","Árboles con luz"],["escritorio","Árboles de escritorio"],
+  ["coronas","Coronas de rama"],["escarcha","Coronas de escarcha"],["festones","Guirnaldas y escarchas"],["colgantes","Colgantes"]
+];
+
+const P = [
+ // ---- Árboles sin luz
+ {id:"BH",cat:"sinluz",name:"Árbol clásico BH",desc:"Verde, punta tipo abeto. Base metálica.",img:"BH",v:[T("B120H",120,180,1,149),T("B150H",150,300,1,209),T("B180H",180,500,1,305),T("B210H",210,728,1,420),T("B240H",240,1100,1,590)]},
+ {id:"BZ",cat:"sinluz",name:"Árbol frondoso BZ",desc:"Verde, cuerpo frondoso.",img:"BZ",v:[T("B60Z",60,50,48,28),T("B90Z",90,80,20,48),T("B120Z",120,216,1,209),T("B150Z",150,340,1,369),T("B180Z",180,560,1,476),T("B210Z",210,860,1,676),T("B240Z",240,1200,1,866)]},
+ {id:"BZB",cat:"sinluz",name:"Árbol blanco BZB",desc:"Blanco, mismo cuerpo que el BZ.",img:"BZB",v:[T("B60ZB",60,50,48,38),T("B90ZB",90,80,20,58),T("B120ZB",120,216,1,225),T("B150ZB",150,340,1,388),T("B180ZB",180,560,1,535),T("B210ZB",210,860,1,735),T("B240ZB",240,1200,1,933)]},
+ {id:"BG",cat:"sinluz",name:"Árbol verde brillante BG",desc:"Verde intenso, rama densa.",img:"BG",v:[T("B120G",120,300,1,235),T("B150G",150,450,1,325),T("B180G",180,800,1,472),T("B210G",210,1050,1,645),T("B240G",240,1500,1,895)]},
+ {id:"BA",cat:"sinluz",name:"Árbol premium BA",desc:"Verde, alto número de ramas.",img:"BA",v:[T("B150A",150,620,1,680),T("B180A",180,970,1,938),T("B210A",210,1370,1,1280),T("B240A",240,1800,1,1880)]},
+ {id:"B1A",cat:"sinluz",name:"Árbol delgado B1A",desc:"Verde, silueta esbelta para espacios reducidos.",img:"B1A",v:[T("B181A",180,476,1,400),T("B211A",210,646,1,585)]},
+ {id:"BS",cat:"sinluz",name:"Árbol pino BS",desc:"Verde, aguja larga tipo pino.",img:"BS",v:[T("B150S",150,180,1,410),T("B180S",180,280,1,555),T("B210S",210,360,1,730)]},
+ {id:"BT",cat:"sinluz",name:"Árbol pino nevado BT",desc:"Verde con puntas nevadas.",img:"BT",v:[T("B150T",150,180,1,438),T("B180T",180,280,1,600),T("B210T",210,360,1,775)]},
+ {id:"BU",cat:"sinluz",name:"Árbol nevado BU",desc:"Verde con nevado abundante.",img:"BU",v:[T("B151U",150,350,1,599),T("B180U",180,600,1,855),T("B181U",180,600,1,898),T("B210U",210,900,1,1288)]},
+ {id:"BV",cat:"sinluz",name:"Árbol nevado con piñas BV",desc:"Verde nevado con piñas y cerezas.",img:"BV",v:[T("B180V",180,876,1,1100),T("B210V",210,1251,1,1550)]},
+ // ---- Árboles con luz
+ {id:"AC",cat:"conluz",name:"Fibra óptica AC",desc:"Verde, fibra óptica multicolor y estrella.",img:"AC",v:[T("A120C",120,110,6,570),T("A150C",150,150,6,800),T("A180C",180,200,6,1060),T("A210C",210,240,4,1300)]},
+ {id:"AD",cat:"conluz",name:"Luces esfera AD",desc:"Verde con luces LED tipo esfera multicolor.",img:"AD",v:[T("A120D",120,110,6,570),T("A150D",150,150,6,800),T("A180D",180,200,6,1050),T("A210D",210,240,4,1300)]},
+ {id:"AG",cat:"conluz",name:"Rizos de luz AG",desc:"Negro con nevado, fibra óptica en espiral.",img:"AG",v:[T("A150G",150,150,6,820),T("A180G",180,200,6,1100)]},
+ {id:"AS",cat:"conluz",name:"Luz cálida AS",desc:"Verde con destellos en luz cálida.",img:"AS",v:[T("A150S",150,150,6,850),T("A180S",180,200,6,1150)]},
+ {id:"AX",cat:"conluz",name:"Copos de luz AX",desc:"Verde con copos LED multicolor.",img:"AX",v:[T("A150X",150,150,6,850),T("A180X",180,200,6,1150),T("A210X",210,240,4,1400)]},
+ {id:"AH",cat:"conluz",name:"Fibra óptica AH",desc:"Verde, fibra óptica en tonos lila y dorado.",img:"AH",v:[T("A120H",120,110,6,630),T("A150H",150,150,6,900),T("A180H",180,200,6,1180),T("A210H",210,240,4,1450)]},
+ {id:"AB",cat:"conluz",name:"Blanco iluminado AB",desc:"Blanco con luces LED multicolor.",img:"AB",v:[T("A150B",150,150,6,820),T("A180B",180,200,6,1080),T("A210B",210,240,4,1350)]},
+ {id:"AW",cat:"conluz",name:"Árbol con luz AW",desc:"Verde con luz integrada.",img:null,v:[T("A150W",150,150,6,850),T("A180W",180,200,6,1100),T("A210W",210,240,4,1350)]},
+ {id:"AM",cat:"conluz",name:"Figuras de luz AM",desc:"Verde con figuras navideñas iluminadas.",img:"AM",v:[T("A150M",150,150,6,750),T("A180M",180,200,6,1000),T("A210M",210,240,4,1250)]},
+ {id:"AF",cat:"conluz",name:"Nochebuenas AF",desc:"Verde con fibra óptica y nochebuenas.",img:"AF",v:[T("A210F",210,240,4,1600)]},
+ {id:"AFF",cat:"conluz",name:"Esferas y nochebuenas AFF",desc:"Verde con esferas, nochebuenas y luces.",img:"AFF",v:[T("A150FF",150,200,6,990),T("A180FF",180,200,6,1300)]},
+ {id:"AK",cat:"conluz",name:"Esferas rojas AK",desc:"Verde cubierto de esferas rojas iluminadas.",img:"AK",v:[T("A180K",180,220,6,1350)]},
+ {id:"AJ",cat:"conluz",name:"Nevado decorado AJ",desc:"Verde nevado con piñas, esferas y luz cálida.",img:"AJ",v:[T("A180J",180,200,4,1750)]},
+ {id:"AT",cat:"conluz",name:"Punta flexible AT",desc:"Fibra óptica con punta que se dobla.",img:"AT",v:[T("A180T",180,180,4,1300)]},
+ // ---- Escritorio con luz
+ ...[["A45A","45","Verde, luces multicolor",24,190,"Verde"],["A45B","45","Rosa, luz brillante",24,200,"Rosa"],
+     ["A60A","60","Verde, fibra multicolor",12,299,"Verde"],["A60C","60","Verde, figuras de luz",12,289,"Verde"],
+     ["A60D","60","Verde, esferas de luz",12,320,"Verde"],["A60E","60","Verde, estrellas de luz",12,289,"Verde"],
+     ["A60F","60","Verde con nochebuenas y esferas",12,340,"Verde"],["A60G","60","Rosa, luz brillante",12,325,"Rosa"],
+     ["A60H","60","Verde, fibra en tonos cálidos",12,305,"Verde"],["A60R","60","Blanco con rosa, esferas",12,370,"Blanco con rosa"],
+     ["A60X","60","Verde, copos de luz",12,325,"Verde"]]
+   .map(([sku,cm,d,caja,c,col])=>({id:sku,cat:"escritorio",name:`Escritorio ${sku} · ${cm} cm`,desc:d+". Con maceta.",img:sku,
+     v:[{sku,label:cm+" cm",specs:[["Altura",cm+" cm"],["Color",col],["Pzs/caja",caja]],caja,costo:c}]})),
+ // ---- Coronas de rama
+ {id:"C3595",cat:"coronas",name:"Corona natural 35 cm",desc:"Rama moldeable, 95 ramas.",img:"C3595",v:[S("C3595","35 cm",50,32,[["Diámetro","35 cm"],["Ramas",95]])]},
+ {id:"C45130",cat:"coronas",name:"Corona natural 45 cm",desc:"Rama moldeable, 130 ramas.",img:"C45130",v:[S("C45130","45 cm",50,48,[["Diámetro","45 cm"],["Ramas",130]])]},
+ {id:"C55180",cat:"coronas",name:"Corona natural 55 cm",desc:"Rama moldeable, 180 ramas.",img:"C55180",v:[S("C55180","55 cm",25,89,[["Diámetro","55 cm"],["Ramas",180]])]},
+ {id:"C4581",cat:"coronas",name:"Corona con piñas 45 cm",desc:"Verde natural con piñas, 81 ramas.",img:"C4581",v:[S("C4581","45 cm",24,77,[["Diámetro","45 cm"],["Ramas",81]])]},
+ {id:"C4080",cat:"coronas",name:"Corona nevada con piñas y cerezas 40 cm",desc:"Nevada, 80 ramas.",img:"C4080",v:[S("C4080","40 cm",24,64,[["Diámetro","40 cm"],["Ramas",80]])]},
+ {id:"C50140",cat:"coronas",name:"Corona nevada con piñas y cerezas 50 cm",desc:"Nevada, 140 ramas.",img:"C50140",v:[S("C50140","50 cm",24,125,[["Diámetro","50 cm"],["Ramas",140]])]},
+ // ---- Coronas de escarcha
+ {id:"CN3809A",cat:"escarcha",name:"Corona con adornos, base verde",desc:"Seis diseños surtidos (A a F) con letrero Feliz Navidad.",img:"CN3809A",v:[S("CN3809A","38 cm",36,90,[["Diámetro","38 cm"],["Modelos","A–F"]])]},
+ {id:"CN3809B",cat:"escarcha",name:"Corona con adornos, base nevada",desc:"Seis diseños surtidos (A a F) con letrero Feliz Navidad.",img:"CN3809B",v:[S("CN3809B","38 cm",36,90,[["Diámetro","38 cm"],["Modelos","A–F"]])]},
+ {id:"CN3810A",cat:"escarcha",name:"Corona con nochebuenas, base verde",desc:"Seis diseños surtidos (A a F).",img:"CN3810A",v:[S("CN3810A","38 cm",36,70,[["Diámetro","38 cm"],["Modelos","A–F"]])]},
+ {id:"CN3810B",cat:"escarcha",name:"Corona con nochebuenas, base nevada",desc:"Seis diseños surtidos (A a F).",img:"CN3810B",v:[S("CN3810B","38 cm",36,70,[["Diámetro","38 cm"],["Modelos","A–F"]])]},
+ {id:"CN3811",cat:"escarcha",name:"Corona plateada con esferas",desc:"Cinco diseños surtidos (A a E).",img:"CN3811",v:[S("CN3811","38 cm",36,70,[["Diámetro","38 cm"],["Modelos","A–E"]])]},
+ {id:"CN4812A",cat:"escarcha",name:"Corona grande con moño, base verde",desc:"Seis diseños surtidos (A a F).",img:"CN4812A",v:[S("CN4812A","48 cm",36,105,[["Diámetro","48 cm"],["Modelos","A–F"]])]},
+ {id:"CN4812B",cat:"escarcha",name:"Corona grande con moño, base nevada",desc:"Seis diseños surtidos (A a F).",img:"CN4812B",v:[S("CN4812B","48 cm",36,105,[["Diámetro","48 cm"],["Modelos","A–F"]])]},
+ {id:"C48N",cat:"escarcha",name:"Corona Feliz Navidad 48 cm",desc:"Diseños nuevos, base verde. Elige el modelo.",isNew:true,v:[
+   S("CN4812A-A","Plata y rojo",36,105,[["Diámetro","48 cm"]],"CN4812A-A"),S("CN4812A-C","Rojo y dorado",36,105,[["Diámetro","48 cm"]],"CN4812A-C"),
+   S("CA4812A-D","Rojo",36,105,[["Diámetro","48 cm"]],"CA4812A-D"),S("CA4812A-E","Dorado",36,105,[["Diámetro","48 cm"]],"CA4812A-E")]},
+ {id:"C38N",cat:"escarcha",name:"Corona Feliz Navidad 38 cm",desc:"Diseños nuevos, base verde. Elige el modelo.",isNew:true,v:[
+   S("CA3812A-A","Plata y rojo",36,90,[["Diámetro","38 cm"]],"CA3812A-A"),S("CN3812A-C","Rojo y dorado",36,90,[["Diámetro","38 cm"]],"CN3812A-C"),
+   S("CN3812A-D","Rojo",36,90,[["Diámetro","38 cm"]],"CN3812A-D"),S("CN3812A-E","Dorado",36,90,[["Diámetro","38 cm"]],"CN3812A-E")]},
+ // ---- Guirnaldas y escarchas
+ {id:"F270",cat:"festones",name:"Guirnalda de rama 2.70 m",desc:"Verde natural, moldeable.",img:"F270200",v:[
+   S("F270160","160 ramas",50,52,[["Largo","270 cm"],["Ramas",160]],"F270160"),S("F270200","200 ramas",50,60,[["Largo","270 cm"],["Ramas",200]],"F270200")]},
+ {id:"CN1007",cat:"festones",name:"Escarcha blanca 9 cm × 20 m",desc:"Tira blanca para árboles y aparadores.",img:"CN1007",v:[S("CN1007","Blanca",36,63,[["Medida","9 cm × 20 m"]])]},
+ {id:"CN1016",cat:"festones",name:"Escarcha colores surtidos 9 cm × 20 m",desc:"Plata, morado, verde, dorado y azul.",img:"CN1016",isNew:true,v:[S("CN1016","Surtida",30,76,[["Medida","9 cm × 20 m"]])]},
+ {id:"ROLLO",cat:"festones",name:"Rollo de escarcha 9 cm × 20 m",desc:"En carrete. Elige el color.",isNew:true,v:[
+   ["CN1012-A","Plateada",73],["CN1013-A","Dorada",73],["CN1010-A","Roja",73],["CN1006-A","Verde",66],["CN1009-A","Verde claro",66],
+   ["CN1011-A","Verde puntas blancas",73],["CN1008-A","Nevado",66],["CN1014-A","Azul",73],["CN1015-A","Rosa",73]]
+   .map(([sku,l,c])=>S(sku,l,12,c,[["Medida","9 cm × 20 m"]],sku))},
+ // ---- Colgantes
+ {id:"CN1001",cat:"colgantes",name:"Gorro de Santa",desc:"Escarcha roja y blanca con letrero.",img:"CN1001",v:[S("CN1001","Gorro",60,29)]},
+ {id:"CN1002",cat:"colgantes",name:"Bastón navideño",desc:"Verde o rojo con moño plateado (A/B).",img:"CN1002",v:[S("CN1002","Bastón",100,17,[["Modelos","A/B"]])]},
+ {id:"CN1003",cat:"colgantes",name:"Bastones cruzados",desc:"Verde o rojo con moño (A/B).",img:"CN1003",v:[S("CN1003","Doble",120,17,[["Modelos","A/B"]])]},
+ {id:"CN1004",cat:"colgantes",name:"Árbol de mesa con esferas 34 cm",desc:"Tres combinaciones de color (A/B/C).",img:"CN1004",v:[S("CN1004","34 cm",72,50,[["Altura","34 cm"],["Modelos","A/B/C"]])]},
+ {id:"CN1005",cat:"colgantes",name:"Bota navideña",desc:"Dorada, roja o verde (A/B/C).",img:"CN1005",v:[S("CN1005","Bota",60,29,[["Modelos","A/B/C"]])]},
+];
+
+// ---- solo lo que va en esta página: menudeo = 1 pz por caja, mayoreo = cajas de varias piezas
+for(const p of P){ p.v = p.v.filter(v => MODE==="menudeo" ? v.caja===1 : v.caja>1);
+  if(MODE==="menudeo") p.v.forEach(v=>v.specs=v.specs.filter(s=>s[0]!=="Pzs/caja")); }
+for(let i=P.length-1;i>=0;i--) if(!P[i].v.length) P.splice(i,1);
+if(MODE==="menudeo"){
+  CATS.splice(0,CATS.length,["verde","Verdes"],["blanco","Blancos"],["nevado","Nevados"]);
+  P.forEach(p=>p.cat = p.id==="BZB" ? "blanco" : ["BT","BU","BV"].includes(p.id) ? "nevado" : "verde");
+}
+for(let i=CATS.length-1;i>=0;i--) if(!P.some(p=>p.cat===CATS[i][0])) CATS.splice(i,1);
+
+// ---- precios
+const ceil = n => Math.ceil(n);
+const pieza = v => MODE==="menudeo" ? PRECIO_MENUDEO[v.sku] : ceil(v.costo*(1+CONFIG.margenMayoreo));
+const unidad = v => MODE==="menudeo" ? 1 : v.caja;          // piezas por unidad de venta
+const precioUnidad = v => pieza(v)*unidad(v);
+const fmt = n => "$"+n.toLocaleString("es-MX");
+const VIDX = {}; P.forEach(p=>p.v.forEach(v=>VIDX[v.sku]={p,v}));
+const imgOf = (p,v) => IMG[v.img||p.img] || null;
+
+// ---- estado
+let cat="todo", query="", sort="cat";
+const sel = {}; // producto -> sku elegido
+let cart = {};
+try{ cart = JSON.parse(localStorage.getItem("pye-cart-"+MODE)||"{}")||{} }catch(e){ cart={} }
+for(const k in cart) if(!VIDX[k]) delete cart[k];
+const save = ()=>{ try{ localStorage.setItem("pye-cart-"+MODE,JSON.stringify(cart)) }catch(e){} };
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function chips(){
+  const counts = {todo:P.length}; P.forEach(p=>counts[p.cat]=(counts[p.cat]||0)+1);
+  $("chips").innerHTML = [["todo","Todo"],...CATS].map(([k,l])=>
+    `<button class="chip" type="button" data-cat="${k}" aria-pressed="${cat===k}">${l}<span class="c">${counts[k]||0}</span></button>`).join("");
+}
+function matches(p){
+  if(cat!=="todo" && p.cat!==cat) return false;
+  if(!query) return true;
+  const hay = (p.name+" "+p.desc+" "+p.v.map(v=>v.sku+" "+v.label).join(" ")).toLowerCase()
+    .normalize("NFD").replace(/[̀-ͯ]/g,"");
+  return query.split(/\s+/).every(t=>hay.includes(t));
+}
+function render(){
+  let list = P.filter(matches);
+  const base = p => pieza(p.v[0]);
+  if(sort==="asc") list=[...list].sort((a,b)=>base(a)-base(b));
+  if(sort==="desc") list=[...list].sort((a,b)=>base(b)-base(a));
+  $("count").textContent = list.length===1?"1 producto":list.length+" productos";
+  if(!list.length){ $("grid").innerHTML=`<div class="empty">No encontramos productos con “${esc(query)}”. Prueba con otra palabra o elige “Todo”.</div>`; return; }
+  $("grid").innerHTML = list.map(card).join("");
+}
+function card(p){
+  const v = VIDX[sel[p.id]]?.v || p.v[0];
+  const src = imgOf(p,v);
+  const sizes = p.v.length>1 ? `<div class="sizes" role="group" aria-label="Opciones">${p.v.map(x=>
+     `<button class="sz" type="button" data-p="${p.id}" data-sku="${x.sku}" aria-pressed="${x.sku===v.sku}">${esc(x.label)}</button>`).join("")}</div>` : "";
+  return `<article class="card" data-id="${p.id}">
+    <div class="ph">${src?`<img src="${src}" alt="${esc(p.name)} ${esc(v.label)}" loading="lazy">`:`<div class="noimg">Foto en preparación</div>`}
+      ${p.isNew?`<span class="tag">Nuevo</span>`:""}</div>
+    <div class="body">
+      <div class="head"><span class="mono">${v.sku}</span><h3>${esc(p.name)}</h3><p>${esc(p.desc)}</p></div>
+      ${sizes}
+      <div class="specs">${v.specs.map(([k,x])=>`<span>${k} <b>${esc(x)}</b></span>`).join("")}</div>
+      <div class="price">
+        <div class="pm"><strong>${fmt(pieza(v))}</strong><span>${MODE==="menudeo"?"":"c/u"}</span></div>
+        ${MODE==="mayoreo"?`<div class="pw">Caja de ${v.caja} pzs: ${fmt(precioUnidad(v))}</div>`:""}
+      </div>
+      <div class="buy">
+        <div class="qty"><button type="button" data-step="-1" aria-label="Menos">−</button><input id="q-${p.id}" type="number" min="1" value="1" inputmode="numeric" aria-label="Cantidad"><button type="button" data-step="1" aria-label="Más">+</button></div>
+        <button class="add" type="button" data-add="${v.sku}" data-p="${p.id}">Agregar</button>
+      </div>
+    </div></article>`;
+}
+
+// ---- carrito
+function lineCalc(sku){
+  const {p,v}=VIDX[sku]; const q=cart[sku];
+  return {p,v,q,unit:pieza(v),pzs:q*unidad(v),sub:precioUnidad(v)*q};
+}
+function renderCart(){
+  const skus = Object.keys(cart);
+  const n = skus.reduce((a,k)=>a+cart[k],0);
+  $("cartN").textContent = n;
+  if(!skus.length){
+    $("lines").innerHTML = `<div class="dempty">Tu pedido está vacío.<br>Agrega productos desde el catálogo.</div>`;
+    $("dfoot").hidden = true; return;
+  }
+  $("dfoot").hidden = false;
+  let total=0;
+  $("lines").innerHTML = skus.map(sku=>{
+    const L=lineCalc(sku); total+=L.sub;
+    const src = imgOf(L.p,L.v);
+    return `<div class="line">
+      ${src?`<img src="${src}" alt="">`:`<div style="width:56px;height:56px;border-radius:8px;background:var(--chip)"></div>`}
+      <div><h4>${esc(L.p.name)}</h4><div class="meta"><span class="mono">${sku}</span> · ${esc(L.v.label)} · ${fmt(L.unit)} c/u</div>
+        ${MODE==="mayoreo"?`<div class="meta">${L.q} ${L.q===1?"caja":"cajas"} × ${L.v.caja} = <b>${L.pzs} pzs</b></div>`:""}</div>
+      <div class="right"><strong>${fmt(L.sub)}</strong>
+        <div class="qty sm"><button type="button" data-cs="-1" data-sku="${sku}" aria-label="Menos">−</button><input type="number" min="1" value="${L.q}" data-ci="${sku}" id="ci-${sku}" aria-label="Cantidad"><button type="button" data-cs="1" data-sku="${sku}" aria-label="Más">+</button></div>
+        <button class="rm" type="button" data-rm="${sku}">Quitar</button></div></div>`;
+  }).join("");
+  $("total").textContent = fmt(total);
+  const minimo = MODE==="menudeo" ? CONFIG.pedidoMinimo : 0;
+  const falta = minimo - total, box = $("minBox");
+  box.hidden = !minimo;
+  if(minimo){
+    box.className = "minbox" + (falta<=0 ? " ok" : "");
+    box.innerHTML = falta>0
+      ? `<span>Te faltan ${fmt(falta)} para el pedido mínimo de ${fmt(minimo)} con envío incluido.</span><div class="bar"><i style="width:${Math.min(100,total/minimo*100)}%"></i></div>`
+      : `<span>Envío incluido en tu pedido.</span>`;
+  }
+  $("waBtn").setAttribute("aria-disabled", String(minimo>0 && falta>0));
+  $("copyBtn").disabled = minimo>0 && falta>0;
+  updateWA(total);
+}
+function orderText(total){
+  const lines = Object.keys(cart).map(sku=>{const L=lineCalc(sku);
+    return MODE==="mayoreo"
+      ? `• ${L.q} caja(s) ${sku} ${L.p.name} (${L.v.label}) — ${L.pzs} pzs × ${fmt(L.unit)} = ${fmt(L.sub)}`
+      : `• ${L.q} × ${sku} ${L.p.name} (${L.v.label}) — ${fmt(L.unit)} c/u = ${fmt(L.sub)}`});
+  const n=$("cName").value.trim(), c=$("cCity").value.trim(), notes=$("cNotes").value.trim();
+  const datos = [n&&`Nombre${MODE==="mayoreo"?"/negocio":""}: ${n}`, c&&`Ciudad/CP: ${c}`, notes&&`Notas: ${notes}`].filter(Boolean);
+  return [`Hola, quiero hacer este pedido ${MODE==="mayoreo"?"de mayoreo ":""}en ${CONFIG.tienda}:`,"",...lines,"",`Total: ${fmt(total)}`,
+    ...(datos.length?["",...datos]:[])].join("\n");
+}
+function currentTotal(){ return Object.keys(cart).reduce((a,k)=>a+lineCalc(k).sub,0) }
+function updateWA(total){
+  const txt = encodeURIComponent(orderText(total ?? currentTotal()));
+  $("waBtn").href = `https://wa.me/${CONFIG.whatsapp}?text=${txt}`;
+  $("waNote").textContent = CONFIG.whatsapp
+    ? "Te confirmamos existencias, envío y forma de pago por WhatsApp."
+    : "Se abrirá WhatsApp con tu pedido listo para enviar.";
+}
+function toast(t){ const el=$("toast"); el.textContent=t; el.hidden=false; clearTimeout(toast.t); toast.t=setTimeout(()=>el.hidden=true,1800) }
+function openCart(o){ $("drawer").hidden=!o; $("scrim").hidden=!o; if(o) renderCart(); }
+
+// ---- eventos
+$("chips").addEventListener("click",e=>{const b=e.target.closest("[data-cat]"); if(!b) return; cat=b.dataset.cat; chips(); render();});
+$("q").addEventListener("input",e=>{query=e.target.value.trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,""); render();});
+$("sort").addEventListener("change",e=>{sort=e.target.value; render();});
+$("grid").addEventListener("click",e=>{
+  const sz=e.target.closest(".sz");
+  if(sz){ sel[sz.dataset.p]=sz.dataset.sku; const art=sz.closest(".card"); const p=P.find(x=>x.id===sz.dataset.p);
+    const q=art.querySelector("input").value; art.outerHTML=card(p); document.getElementById("q-"+p.id).value=q; return; }
+  const st=e.target.closest("[data-step]");
+  if(st){ const i=st.parentElement.querySelector("input"); i.value=Math.max(1,(+i.value||1)+(+st.dataset.step)); return; }
+  const add=e.target.closest("[data-add]");
+  if(add){ const i=document.getElementById("q-"+add.dataset.p); const q=Math.max(1,Math.floor(+i.value||1));
+    cart[add.dataset.add]=(cart[add.dataset.add]||0)+q; save(); renderCart(); i.value=1;
+    toast(MODE==="mayoreo"?`Agregado: ${q} ${q===1?"caja":"cajas"} de ${add.dataset.add}`:`Agregado: ${q} × ${add.dataset.add}`); }
+});
+$("lines").addEventListener("click",e=>{
+  const s=e.target.closest("[data-cs]"); if(s){ const k=s.dataset.sku; cart[k]=Math.max(1,cart[k]+(+s.dataset.cs)); save(); renderCart(); return; }
+  const r=e.target.closest("[data-rm]"); if(r){ delete cart[r.dataset.rm]; save(); renderCart(); }
+});
+$("lines").addEventListener("change",e=>{const k=e.target.dataset.ci; if(!k) return; cart[k]=Math.max(1,Math.floor(+e.target.value||1)); save(); renderCart();});
+["cName","cCity","cNotes"].forEach(id=>$(id).addEventListener("input",()=>updateWA()));
+$("openCart").onclick=()=>openCart(true); $("closeCart").onclick=()=>openCart(false); $("scrim").onclick=()=>openCart(false);
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") openCart(false) });
+$("copyBtn").onclick=()=>{ const t=orderText(currentTotal());
+  navigator.clipboard.writeText(t).then(()=>toast("Pedido copiado")).catch(()=>toast("No se pudo copiar; usa el botón de WhatsApp")); };
+
+if(CONFIG.otraPagina){ $("crossA").href=CONFIG.otraPagina; $("crossLink").hidden=false; }
+chips(); render(); renderCart();
+</script>
+
+</body>
+</html>
